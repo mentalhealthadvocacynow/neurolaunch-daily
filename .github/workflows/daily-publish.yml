@@ -3,10 +3,14 @@ name: Build and deploy website
 on:
   push:
     branches: [main]
+
   workflow_dispatch:
 
+  schedule:
+    - cron: "23 14 * * *"
+
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -30,6 +34,24 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate articles with Groq
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          SOURCE_FEED_URL: ${{ vars.SOURCE_FEED_URL }}
+          SOURCE_PERMISSION_CONFIRMED: ${{ vars.SOURCE_PERMISSION_CONFIRMED }}
+          DAILY_LIMIT: ${{ vars.DAILY_LIMIT || '2' }}
+        run: python scripts/generate.py
+
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -38,6 +60,18 @@ jobs:
           SITE_URL: https://mentalhealthadvocacynow.github.io
           BASE_PATH: /neurolaunch-daily
         run: npm run build
+
+      - name: Save generated articles
+        run: |
+          git add src/content/articles data/processed.json
+
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Add daily NeuroLaunch summaries"
+            git push
+          fi
+
 
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
