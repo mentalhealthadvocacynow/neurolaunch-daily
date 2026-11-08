@@ -1,0 +1,7 @@
+---
+import {getCollection} from 'astro:content';
+import Base from '../layouts/Base.astro';
+const articles=(await getCollection('articles')).sort((a,b)=>b.data.publishedAt.localeCompare(a.data.publishedAt));
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+---
+<Base title="Archive | NeuroLaunch Daily"><h1>Article archive</h1><ul>{articles.map(a=><li><time datetime={a.data.publishedAt}>{a.data.publishedAt.slice(0,10)}</time> — <a href={`${base}/articles/${a.id}/`}>{a.data.title}</a></li>)}</ul></Base>

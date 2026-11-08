@@ -1,0 +1,9 @@
+---
+import {getCollection, render} from 'astro:content';
+import Base from '../../layouts/Base.astro';
+export async function getStaticPaths(){return (await getCollection('articles')).map(article=>({params:{id:article.id},props:{article}}));}
+const {article}=Astro.props;
+const {Content}=await render(article);
+const d=article.data;
+---
+<Base title={`${d.title} | NeuroLaunch Daily`} description={d.summary}><article class="article"><p class="eyebrow">{d.category}</p><h1>{d.title}</h1><p class="muted">{d.summary}</p><p><time datetime={d.publishedAt}>{d.publishedAt.slice(0,10)}</time> · Review status: {d.reviewStatus}</p><aside class="notice">{d.reviewStatus === 'sample' ? 'Demonstration content, not a summary of a specific NeuroLaunch article.' : 'AI-generated educational summary. Verify claims against the original source. Not medical advice.'}</aside><Content/><hr/><p>Source: <a href={d.sourceUrl} rel="noopener noreferrer">{d.sourceTitle}</a></p></article></Base>

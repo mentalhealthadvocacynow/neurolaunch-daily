@@ -1,0 +1,8 @@
+---
+const {article} = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const d = article.data;
+---
+<article class="card" data-card data-search={`${d.title} ${d.summary}`.toLowerCase()} data-category={d.category}>
+<div class="eyebrow">{d.category}</div><h2><a href={`${base}/articles/${article.id}/`}>{d.title}</a></h2><p>{d.summary}</p><small><time datetime={d.publishedAt}>{d.publishedAt.slice(0,10)}</time> · {d.reviewStatus === 'sample' ? 'Sample content' : 'AI-generated'}</small>
+</article>

@@ -1,0 +1,16 @@
+---
+import {getCollection} from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+const articles = (await getCollection('articles')).sort((a,b)=>b.data.publishedAt.localeCompare(a.data.publishedAt));
+const categories = [...new Set(articles.map(a=>a.data.category))].sort();
+---
+<Base><section><p class="eyebrow">Read. Reflect. Put it into practice.</p><h1>Small insights.<br/>Thoughtful actions.</h1><p class="muted">Source-linked reading distilled into practical ideas, with the limitations kept in view.</p></section>
+<div class="controls"><input id="search" type="search" aria-label="Search articles" placeholder="Search articles…"/><select id="category" aria-label="Filter by category"><option value="">All topics</option>{categories.map(c=><option value={c}>{c}</option>)}</select></div>
+<div class="grid">{articles.map(article=><ArticleCard article={article}/>)}</div><p id="empty" hidden>No matching articles.</p>
+<script>
+const search = document.querySelector<HTMLInputElement>('#search')!;
+const category = document.querySelector<HTMLSelectElement>('#category')!;
+function filter(){let count=0;document.querySelectorAll<HTMLElement>('[data-card]').forEach(card=>{const show=(card.dataset.search||'').includes(search.value.toLowerCase())&&(!category.value||card.dataset.category===category.value);card.hidden=!show;if(show)count++;});document.querySelector<HTMLElement>('#empty')!.hidden=count>0;}
+search.addEventListener('input',filter);category.addEventListener('change',filter);
+</script></Base>
